@@ -1,0 +1,5 @@
+---
+description: Run instructions
+globs: 
+---
+The agent will not build or run the app. Do not give me the command to run the app. 

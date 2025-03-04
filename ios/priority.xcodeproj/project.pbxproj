@@ -7,24 +7,52 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0C80B921A6F3F58F76C31292 /* libPods-priority.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-priority.a */; };
+		0F372462816040CB9EEF4FC6 /* Mali-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 02D7B5367E294385B0673053 /* Mali-MediumItalic.ttf */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		158B5C4CF166401492C658ED /* Mali-SemiBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 75786AD0F3D8467DAC75162C /* Mali-SemiBoldItalic.ttf */; };
+		1AC4CC2485EA4ADC9AB09E62 /* Mali-ExtraLightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 48C88E62AD8040A48B5C2416 /* Mali-ExtraLightItalic.ttf */; };
+		29E86E0C7AA24D3E8D7DEC6B /* Mali-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F59BBA9D94824895BA1E2077 /* Mali-Light.ttf */; };
+		39B5AD3EA7E64698832E1818 /* Roundo-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BD6561FDE828484C8DE7C2CC /* Roundo-Variable.ttf */; };
+		55849D8C55E64588BB3BF5F2 /* Melodrama-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F2775678116046EFB15C2C16 /* Melodrama-Variable.ttf */; };
+		616989720AF04BEDB3A92252 /* Mali-LightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F76684D92FFC4649B94AAC51 /* Mali-LightItalic.ttf */; };
+		745A6A07187847469A08860F /* Mali-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EADCA87A21246869E78E3B3 /* Mali-SemiBold.ttf */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		8C2AADCAB98444D8BADB5967 /* Mali-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9D997D5945B1473E9E41699C /* Mali-Regular.ttf */; };
+		8F666F63AEB74F18ABDEF9DB /* Mali-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 445F02371B1648BB8ECBE7EE /* Mali-Medium.ttf */; };
+		9D11527BCBCC46B08AB8985F /* Mali-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EF8F2B8CD7C543B8980AB7DB /* Mali-Italic.ttf */; };
+		A85ACD0D8EE043EEA6F0B273 /* Mali-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0D5A5F7BFECD4F42832E5018 /* Mali-ExtraLight.ttf */; };
 		C623128E9AB17937AE6CFAAC /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
+		C7F4CE7D1EC3469FB5F76E8B /* Mali-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A4EDD3E7272C40828CEDC38C /* Mali-Bold.ttf */; };
+		DD830A44C23BC1ABF24118F7 /* libPods-priority.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 01F8A09A5143695E8DEE5421 /* libPods-priority.a */; };
+		FD9F3FDAC8BA4634A2B909EB /* Mali-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 68B4957A534A460FA4713CA2 /* Mali-BoldItalic.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		01F8A09A5143695E8DEE5421 /* libPods-priority.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-priority.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		02D7B5367E294385B0673053 /* Mali-MediumItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Mali-MediumItalic.ttf"; path = "../src/assets/fonts/Mali-MediumItalic.ttf"; sourceTree = "<group>"; };
+		095B7E6EF964C6815862304D /* Pods-priority.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-priority.debug.xcconfig"; path = "Target Support Files/Pods-priority/Pods-priority.debug.xcconfig"; sourceTree = "<group>"; };
+		0D5A5F7BFECD4F42832E5018 /* Mali-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Mali-ExtraLight.ttf"; path = "../src/assets/fonts/Mali-ExtraLight.ttf"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* priority.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = priority.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = priority/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = priority/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = priority/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		3B4392A12AC88292D35C810B /* Pods-priority.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-priority.debug.xcconfig"; path = "Target Support Files/Pods-priority/Pods-priority.debug.xcconfig"; sourceTree = "<group>"; };
-		5709B34CF0A7D63546082F79 /* Pods-priority.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-priority.release.xcconfig"; path = "Target Support Files/Pods-priority/Pods-priority.release.xcconfig"; sourceTree = "<group>"; };
-		5DCACB8F33CDC322A6C60F78 /* libPods-priority.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-priority.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		445F02371B1648BB8ECBE7EE /* Mali-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Mali-Medium.ttf"; path = "../src/assets/fonts/Mali-Medium.ttf"; sourceTree = "<group>"; };
+		48C88E62AD8040A48B5C2416 /* Mali-ExtraLightItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Mali-ExtraLightItalic.ttf"; path = "../src/assets/fonts/Mali-ExtraLightItalic.ttf"; sourceTree = "<group>"; };
+		4FE5977D14B2F4D470EE7217 /* Pods-priority.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-priority.release.xcconfig"; path = "Target Support Files/Pods-priority/Pods-priority.release.xcconfig"; sourceTree = "<group>"; };
+		68B4957A534A460FA4713CA2 /* Mali-BoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Mali-BoldItalic.ttf"; path = "../src/assets/fonts/Mali-BoldItalic.ttf"; sourceTree = "<group>"; };
+		75786AD0F3D8467DAC75162C /* Mali-SemiBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Mali-SemiBoldItalic.ttf"; path = "../src/assets/fonts/Mali-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = priority/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = priority/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		8EADCA87A21246869E78E3B3 /* Mali-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Mali-SemiBold.ttf"; path = "../src/assets/fonts/Mali-SemiBold.ttf"; sourceTree = "<group>"; };
+		9D997D5945B1473E9E41699C /* Mali-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Mali-Regular.ttf"; path = "../src/assets/fonts/Mali-Regular.ttf"; sourceTree = "<group>"; };
+		A4EDD3E7272C40828CEDC38C /* Mali-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Mali-Bold.ttf"; path = "../src/assets/fonts/Mali-Bold.ttf"; sourceTree = "<group>"; };
+		BD6561FDE828484C8DE7C2CC /* Roundo-Variable.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Roundo-Variable.ttf"; path = "../src/assets/fonts/Roundo-Variable.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		EF8F2B8CD7C543B8980AB7DB /* Mali-Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Mali-Italic.ttf"; path = "../src/assets/fonts/Mali-Italic.ttf"; sourceTree = "<group>"; };
+		F2775678116046EFB15C2C16 /* Melodrama-Variable.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Melodrama-Variable.ttf"; path = "../src/assets/fonts/Melodrama-Variable.ttf"; sourceTree = "<group>"; };
+		F59BBA9D94824895BA1E2077 /* Mali-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Mali-Light.ttf"; path = "../src/assets/fonts/Mali-Light.ttf"; sourceTree = "<group>"; };
+		F76684D92FFC4649B94AAC51 /* Mali-LightItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Mali-LightItalic.ttf"; path = "../src/assets/fonts/Mali-LightItalic.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,7 +60,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0C80B921A6F3F58F76C31292 /* libPods-priority.a in Frameworks */,
+				DD830A44C23BC1ABF24118F7 /* libPods-priority.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -55,7 +83,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				5DCACB8F33CDC322A6C60F78 /* libPods-priority.a */,
+				01F8A09A5143695E8DEE5421 /* libPods-priority.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -75,6 +103,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				C8D57C2CE5EE423CB7E9CFCE /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -92,10 +121,31 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				3B4392A12AC88292D35C810B /* Pods-priority.debug.xcconfig */,
-				5709B34CF0A7D63546082F79 /* Pods-priority.release.xcconfig */,
+				095B7E6EF964C6815862304D /* Pods-priority.debug.xcconfig */,
+				4FE5977D14B2F4D470EE7217 /* Pods-priority.release.xcconfig */,
 			);
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		C8D57C2CE5EE423CB7E9CFCE /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F2775678116046EFB15C2C16 /* Melodrama-Variable.ttf */,
+				A4EDD3E7272C40828CEDC38C /* Mali-Bold.ttf */,
+				68B4957A534A460FA4713CA2 /* Mali-BoldItalic.ttf */,
+				0D5A5F7BFECD4F42832E5018 /* Mali-ExtraLight.ttf */,
+				48C88E62AD8040A48B5C2416 /* Mali-ExtraLightItalic.ttf */,
+				EF8F2B8CD7C543B8980AB7DB /* Mali-Italic.ttf */,
+				F59BBA9D94824895BA1E2077 /* Mali-Light.ttf */,
+				F76684D92FFC4649B94AAC51 /* Mali-LightItalic.ttf */,
+				445F02371B1648BB8ECBE7EE /* Mali-Medium.ttf */,
+				02D7B5367E294385B0673053 /* Mali-MediumItalic.ttf */,
+				9D997D5945B1473E9E41699C /* Mali-Regular.ttf */,
+				8EADCA87A21246869E78E3B3 /* Mali-SemiBold.ttf */,
+				75786AD0F3D8467DAC75162C /* Mali-SemiBoldItalic.ttf */,
+				BD6561FDE828484C8DE7C2CC /* Roundo-Variable.ttf */,
+			);
+			name = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -105,13 +155,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "priority" */;
 			buildPhases = (
-				C38B50BA6285516D6DCD4F65 /* [CP] Check Pods Manifest.lock */,
+				DB5D1E604D360DEF38C5A071 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				00EEFC60759A1932668264C0 /* [CP] Embed Pods Frameworks */,
-				E235C05ADACE081382539298 /* [CP] Copy Pods Resources */,
+				5B3FC627CDC6BC516A1E6F33 /* [CP] Embed Pods Frameworks */,
+				21E8A3FF6DEE0E7B05860101 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -161,6 +211,20 @@
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				C623128E9AB17937AE6CFAAC /* PrivacyInfo.xcprivacy in Resources */,
+				55849D8C55E64588BB3BF5F2 /* Melodrama-Variable.ttf in Resources */,
+				C7F4CE7D1EC3469FB5F76E8B /* Mali-Bold.ttf in Resources */,
+				FD9F3FDAC8BA4634A2B909EB /* Mali-BoldItalic.ttf in Resources */,
+				A85ACD0D8EE043EEA6F0B273 /* Mali-ExtraLight.ttf in Resources */,
+				1AC4CC2485EA4ADC9AB09E62 /* Mali-ExtraLightItalic.ttf in Resources */,
+				9D11527BCBCC46B08AB8985F /* Mali-Italic.ttf in Resources */,
+				29E86E0C7AA24D3E8D7DEC6B /* Mali-Light.ttf in Resources */,
+				616989720AF04BEDB3A92252 /* Mali-LightItalic.ttf in Resources */,
+				8F666F63AEB74F18ABDEF9DB /* Mali-Medium.ttf in Resources */,
+				0F372462816040CB9EEF4FC6 /* Mali-MediumItalic.ttf in Resources */,
+				8C2AADCAB98444D8BADB5967 /* Mali-Regular.ttf in Resources */,
+				745A6A07187847469A08860F /* Mali-SemiBold.ttf in Resources */,
+				158B5C4CF166401492C658ED /* Mali-SemiBoldItalic.ttf in Resources */,
+				39B5AD3EA7E64698832E1818 /* Roundo-Variable.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -183,7 +247,24 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		00EEFC60759A1932668264C0 /* [CP] Embed Pods Frameworks */ = {
+		21E8A3FF6DEE0E7B05860101 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-priority/Pods-priority-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-priority/Pods-priority-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-priority/Pods-priority-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		5B3FC627CDC6BC516A1E6F33 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -200,7 +281,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-priority/Pods-priority-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		C38B50BA6285516D6DCD4F65 /* [CP] Check Pods Manifest.lock */ = {
+		DB5D1E604D360DEF38C5A071 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -222,23 +303,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		E235C05ADACE081382539298 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-priority/Pods-priority-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-priority/Pods-priority-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-priority/Pods-priority-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -255,11 +319,12 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3B4392A12AC88292D35C810B /* Pods-priority.debug.xcconfig */;
+			baseConfigurationReference = 095B7E6EF964C6815862304D /* Pods-priority.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3JZ37ZZ5NR;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = priority/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -273,7 +338,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.priority;
 				PRODUCT_NAME = priority;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -283,11 +348,12 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5709B34CF0A7D63546082F79 /* Pods-priority.release.xcconfig */;
+			baseConfigurationReference = 4FE5977D14B2F4D470EE7217 /* Pods-priority.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3JZ37ZZ5NR;
 				INFOPLIST_FILE = priority/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -300,7 +366,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.priority;
 				PRODUCT_NAME = priority;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";

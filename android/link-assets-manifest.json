@@ -1,0 +1,61 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "src/assets/fonts/Mali-Bold.ttf",
+      "sha1": "1943e5f61e5aed73a55925db23d0d5b641c2a504"
+    },
+    {
+      "path": "src/assets/fonts/Mali-BoldItalic.ttf",
+      "sha1": "b0e2e3abf591153e714394682f2f2a2bd58ca1b7"
+    },
+    {
+      "path": "src/assets/fonts/Mali-ExtraLight.ttf",
+      "sha1": "84876daab5c1914b3775274e5e0af268d3ff3547"
+    },
+    {
+      "path": "src/assets/fonts/Mali-ExtraLightItalic.ttf",
+      "sha1": "d3d8efc33390c992937d79192de061ae5bc23565"
+    },
+    {
+      "path": "src/assets/fonts/Mali-Italic.ttf",
+      "sha1": "bbd453eb665c9606d1f0fa11ed7f4600899b0555"
+    },
+    {
+      "path": "src/assets/fonts/Mali-Light.ttf",
+      "sha1": "340f2799d47c1fe84eee321defff07149573ddac"
+    },
+    {
+      "path": "src/assets/fonts/Mali-LightItalic.ttf",
+      "sha1": "3d5455d860973c0b241caac329826384401a4396"
+    },
+    {
+      "path": "src/assets/fonts/Mali-Medium.ttf",
+      "sha1": "167c5b9dd18d94b8d4fde98b4adf40c7b01c6e06"
+    },
+    {
+      "path": "src/assets/fonts/Mali-MediumItalic.ttf",
+      "sha1": "17b5f2f4bbbdd86588df180739f946e0f28be058"
+    },
+    {
+      "path": "src/assets/fonts/Mali-Regular.ttf",
+      "sha1": "0d69218429954ab53a0cc47ff9d99e9eb28201c4"
+    },
+    {
+      "path": "src/assets/fonts/Mali-SemiBold.ttf",
+      "sha1": "77238dca28a266a72648f40420d03066a364c049"
+    },
+    {
+      "path": "src/assets/fonts/Mali-SemiBoldItalic.ttf",
+      "sha1": "fd85e976baa2dae3aef13223af160737cef62e0a"
+    },
+    {
+      "path": "src/assets/fonts/Melodrama-Variable.ttf",
+      "sha1": "208135756585a6057d8242365843d6c4ed2dd3ab"
+    },
+    {
+      "path": "src/assets/fonts/Roundo-Variable.ttf",
+      "sha1": "9964bb0e5bf430041cf0b7b23ff3c14f1f219fa8"
+    }
+  ]
+}

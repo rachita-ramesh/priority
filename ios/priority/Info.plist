@@ -26,14 +26,13 @@
 	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
-	  <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
@@ -48,5 +47,37 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Mali-Regular.ttf</string>
+		<string>Mali-Medium.ttf</string>
+		<string>Mali-Bold.ttf</string>
+		<string>Mali-Light.ttf</string>
+		<string>Mali-ExtraLight.ttf</string>
+		<string>Mali-SemiBold.ttf</string>
+		<string>Mali-Italic.ttf</string>
+		<string>Mali-LightItalic.ttf</string>
+		<string>Mali-ExtraLightItalic.ttf</string>
+		<string>Mali-MediumItalic.ttf</string>
+		<string>Mali-BoldItalic.ttf</string>
+		<string>Mali-SemiBoldItalic.ttf</string>
+		<string>MaterialCommunityIcons.ttf</string>
+		<string>MaterialIcons.ttf</string>
+		<string>Ionicons.ttf</string>
+		<string>Roundo-Variable.ttf</string>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>priority</string>
+				<string>com.googleusercontent.apps.53562527674-mifkcvp4n5clto9oqmsb947iep3hvmn1</string>
+				<string>com.priority</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>com.priority</string>
+		</dict>
+	</array>
 </dict>
 </plist>
