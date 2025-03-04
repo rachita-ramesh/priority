@@ -1,9 +1,9 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {TouchableOpacity, Text, StyleSheet, Alert, Platform} from 'react-native';
 import {theme} from '../theme';
 import {supabase} from '../lib/supabase';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, CommonActions} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {AuthStackParamList} from '../navigation/types';
 
@@ -12,6 +12,9 @@ const IOS_CLIENT_ID = '53562527674-mifkcvp4n5clto9oqmsb947iep3hvmn1.apps.googleu
 
 GoogleSignin.configure({
   iosClientId: IOS_CLIENT_ID,
+  // Make sure to clear any previous configuration
+  offlineAccess: false,
+  forceCodeForRefreshToken: false,
 });
 
 type Props = {
@@ -19,16 +22,31 @@ type Props = {
   loading?: boolean;
 };
 
-export default function GoogleSignInButton({onSignInComplete, loading}: Props) {
+export default function GoogleSignInButton({onSignInComplete, loading: externalLoading}: Props) {
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
 
   async function handleGoogleSignIn() {
     try {
+      setLoading(true);
       console.log('=== Starting Google Auth ===');
       
       // Sign out from any previous sessions to ensure clean state
-      await GoogleSignin.signOut();
-      await supabase.auth.signOut();
+      try {
+        await GoogleSignin.signOut();
+        console.log('Successfully signed out from Google');
+      } catch (signOutError) {
+        console.log('Google sign out error (non-critical):', signOutError);
+        // Continue anyway as this is just a precaution
+      }
+      
+      try {
+        await supabase.auth.signOut();
+        console.log('Successfully signed out from Supabase');
+      } catch (signOutError) {
+        console.log('Supabase sign out error (non-critical):', signOutError);
+        // Continue anyway as this is just a precaution
+      }
       
       // Check Play Services (this is a no-op on iOS)
       await GoogleSignin.hasPlayServices();
@@ -36,9 +54,10 @@ export default function GoogleSignInButton({onSignInComplete, loading}: Props) {
       // Sign in with Google
       console.log('Starting Google Sign In...');
       const userInfo = await GoogleSignin.signIn();
-      console.log('Google Sign In response:', JSON.stringify(userInfo));
-
+      console.log('Google Sign In successful, user info received:', userInfo);
+      
       // Get tokens
+      console.log('Getting Google tokens...');
       const { idToken } = await GoogleSignin.getTokens();
       if (!idToken) {
         throw new Error('No ID token received from Google');
@@ -62,38 +81,25 @@ export default function GoogleSignInButton({onSignInComplete, loading}: Props) {
       }
 
       console.log('Successfully signed in with Google');
-
-      // Check if profile exists
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, name, partner_id')
-        .eq('id', user.id)
-        .single();
-
-      if (profileError && profileError.code === 'PGRST116') {
-        // Profile doesn't exist, go to NameSetup
-        console.log('No profile found, navigating to NameSetup');
-        const fullName = user.user_metadata.full_name || user.user_metadata.name || '';
-        const firstName = fullName.split(' ')[0];
-        navigation.navigate('NameSetup', {
-          initialName: firstName
-        });
-      } else if (profile?.partner_id) {
-        // Profile exists and has partner, auth context will handle main navigation
-        console.log('Profile with partner found, letting auth context handle navigation');
-      } else {
-        // Profile exists but no partner, go to NameSetup to complete profile
-        console.log('Profile without partner found, navigating to NameSetup');
-        const fullName = user.user_metadata.full_name || user.user_metadata.name || '';
-        const firstName = fullName.split(' ')[0];
-        navigation.navigate('NameSetup', {
-          initialName: profile?.name || firstName
-        });
+      
+      if (onSignInComplete) {
+        onSignInComplete();
       }
       
     } catch (error: any) {
       console.error('=== Google Auth Error ===');
       console.error('Detailed error:', error);
+      
+      // Provide more specific error messages based on the error
+      let errorMessage = 'Unable to sign in with Google. Please try again.';
+      
+      if (error.message?.includes('cancelled')) {
+        errorMessage = 'Sign in was cancelled. Please try again.';
+      } else if (error.message?.includes('network')) {
+        errorMessage = 'Network error. Please check your internet connection and try again.';
+      } else if (error.message?.includes('token')) {
+        errorMessage = 'Authentication token error. Please try signing in again.';
+      }
       
       // Sign out from both services to clean up state
       try {
@@ -105,18 +111,22 @@ export default function GoogleSignInButton({onSignInComplete, loading}: Props) {
 
       Alert.alert(
         'Authentication Error',
-        'Unable to sign in with Google. Please try again.'
+        errorMessage
       );
+    } finally {
+      setLoading(false);
     }
   }
 
+  const isLoading = loading || externalLoading;
+
   return (
     <TouchableOpacity
-      style={[styles.button, loading && styles.buttonDisabled]}
+      style={[styles.button, isLoading && styles.buttonDisabled]}
       onPress={handleGoogleSignIn}
-      disabled={loading}>
+      disabled={isLoading}>
       <Text style={styles.buttonText}>
-        {loading ? 'Signing in...' : 'Continue with Google'}
+        {isLoading ? 'Signing in...' : 'Continue with Google'}
       </Text>
     </TouchableOpacity>
   );

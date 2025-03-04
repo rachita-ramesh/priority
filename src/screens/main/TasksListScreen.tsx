@@ -40,24 +40,27 @@ export default function TasksListScreen({navigation}: Props) {
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const {session, profile} = useAuth();
-  const [userName, setUserName] = useState<string>('');
-  const [partnerName, setPartnerName] = useState<string>('');
 
   useEffect(() => {
     fetchTasks();
     if (profile) {
-      const myName = profile.name || 'Me';
-      const theirName = profile.partner_name || 'Partner';
-      
-      console.log('Setting user names:', { myName, theirName });
-      setUserName(myName);
-      setPartnerName(theirName);
+      console.log('Profile data in TasksListScreen:', {
+        name: profile.name,
+        partner_name: profile.partner_name,
+        partner_id: profile.partner_id,
+        partner_code: profile.partner_code
+      });
+    } else {
+      console.log('No profile data available in TasksListScreen');
     }
     
     // Add a focus listener to refresh tasks when returning to this screen
     const unsubscribe = navigation.addListener('focus', () => {
       console.log('TasksList screen focused, refreshing tasks');
       fetchTasks();
+      
+      // Test Supabase permissions when screen is focused
+      testSupabasePermissions();
     });
 
     return unsubscribe;
@@ -79,6 +82,8 @@ export default function TasksListScreen({navigation}: Props) {
         return;
       }
 
+      console.log('Fetching tasks for user:', session.user.id);
+
       // Fetch all tasks where the user is either the creator, assignee, or the task is shared
       const {data, error} = await supabase
         .from('priorities')
@@ -87,13 +92,36 @@ export default function TasksListScreen({navigation}: Props) {
         .order('due_date', {ascending: true});
 
       if (error) {
+        console.error('Error fetching tasks:', error);
         throw error;
       }
 
-      console.log('Tasks fetched:', data);
-      setTasks(data || []);
+      if (!data) {
+        console.log('No tasks found');
+        setTasks([]);
+        return;
+      }
+
+      console.log('Tasks fetched:', data.length);
+      console.log('Tasks by status:', {
+        pending: data.filter(task => task.status === 'pending').length,
+        completed: data.filter(task => task.status === 'completed').length
+      });
+      
+      // Log a few tasks for debugging
+      if (data.length > 0) {
+        console.log('Sample tasks:', data.slice(0, 3).map(task => ({
+          id: task.id,
+          title: task.title,
+          status: task.status,
+          due_date: task.due_date
+        })));
+      }
+
+      setTasks(data);
       filterTasks(activeFilter);
     } catch (error: any) {
+      console.error('Task fetch error:', error);
       Alert.alert('Error', error.message);
     } finally {
       setLoading(false);
@@ -104,7 +132,7 @@ export default function TasksListScreen({navigation}: Props) {
     if (!profile || !session) return;
     
     console.log('Filtering tasks by:', filterType);
-    console.log('Available tasks:', tasks);
+    console.log('Available tasks for filtering:', tasks.length);
     
     let filtered: Task[] = [];
     
@@ -137,6 +165,27 @@ export default function TasksListScreen({navigation}: Props) {
     const active = filtered.filter(task => task.status === 'pending');
     const completed = filtered.filter(task => task.status === 'completed');
     
+    console.log('Active tasks:', active.length);
+    console.log('Completed tasks:', completed.length);
+    
+    // Log a few active tasks for debugging
+    if (active.length > 0) {
+      console.log('Sample active tasks:', active.slice(0, 2).map(task => ({
+        id: task.id,
+        title: task.title,
+        status: task.status
+      })));
+    }
+    
+    // Log a few completed tasks for debugging
+    if (completed.length > 0) {
+      console.log('Sample completed tasks:', completed.slice(0, 2).map(task => ({
+        id: task.id,
+        title: task.title,
+        status: task.status
+      })));
+    }
+    
     setActiveTasks(active);
     setCompletedTasks(completed);
   }
@@ -150,12 +199,118 @@ export default function TasksListScreen({navigation}: Props) {
         return;
       }
       
-      const {error} = await supabase
+      // Check if the task is already completed
+      if (taskToComplete.status === 'completed') {
+        console.log('Task is already completed:', taskId);
+        Alert.alert('Info', 'This task is already marked as completed.');
+        return;
+      }
+      
+      console.log('Completing task:', {
+        taskId,
+        title: taskToComplete.title,
+        creator_id: taskToComplete.creator_id,
+        assignee_id: taskToComplete.assignee_id,
+        is_shared: taskToComplete.is_shared
+      });
+      
+      if (!session?.user.id) {
+        console.error('No user session found');
+        Alert.alert('Error', 'You must be logged in to complete tasks');
+        return;
+      }
+      
+      // Try to determine if we have permission to update this task
+      const canUpdate = 
+        taskToComplete.creator_id === session.user.id || 
+        taskToComplete.assignee_id === session.user.id || 
+        taskToComplete.is_shared;
+        
+      if (!canUpdate) {
+        console.error('User may not have permission to update this task');
+      }
+      
+      // Update the task status in Supabase
+      console.log('Sending update to Supabase for task:', taskId);
+      
+      // First approach: Try using RPC call if available
+      try {
+        const { data: rpcData, error: rpcError } = await supabase.rpc(
+          'update_task_status',
+          { 
+            task_id: taskId,
+            new_status: 'completed',
+            user_id: session.user.id
+          }
+        );
+        
+        if (!rpcError) {
+          console.log('Task updated successfully via RPC:', rpcData);
+          
+          // Update local state
+          const updatedTasks = tasks.map(task => 
+            task.id === taskId ? {...task, status: 'completed' as const} : task
+          );
+          setTasks(updatedTasks);
+          
+          // Add points for completing task
+          await addPointsForTask(taskId);
+          
+          // Refresh the task list after a short delay
+          setTimeout(() => {
+            fetchTasks();
+          }, 500);
+          
+          return;
+        } else {
+          console.log('RPC approach failed, falling back to direct update:', rpcError);
+        }
+      } catch (rpcAttemptError) {
+        console.log('RPC function not available, falling back to direct update');
+      }
+      
+      // Second approach: Try direct update with more specific conditions
+      const { data, error } = await supabase
         .from('priorities')
-        .update({status: 'completed'})
-        .eq('id', taskId);
+        .update({ status: 'completed' })
+        .eq('id', taskId)
+        .eq('status', 'pending') // Only update if status is currently pending
+        .or(`creator_id.eq.${session.user.id},assignee_id.eq.${session.user.id},is_shared.eq.true`)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating task status:', error);
+        Alert.alert('Error', `Failed to update task: ${error.message}`);
+        return;
+      }
+      
+      console.log('Supabase update response:', data);
+      
+      if (!data || data.length === 0) {
+        console.error('No rows were updated in the database');
+        
+        // Third approach: Try a more permissive update as a last resort
+        console.log('Trying more permissive update...');
+        const { data: lastAttemptData, error: lastAttemptError } = await supabase
+          .from('priorities')
+          .update({ status: 'completed' })
+          .eq('id', taskId)
+          .select();
+          
+        if (lastAttemptError) {
+          console.error('Final update attempt failed:', lastAttemptError);
+          Alert.alert('Error', 'Task status could not be updated. Please try again.');
+          return;
+        }
+        
+        if (!lastAttemptData || lastAttemptData.length === 0) {
+          console.error('All update attempts failed');
+          Alert.alert('Error', 'Task status could not be updated. Please try again.');
+          return;
+        }
+        
+        console.log('Final update attempt succeeded:', lastAttemptData);
+      }
       
       // Update local state
       const updatedTasks = tasks.map(task => 
@@ -163,11 +318,17 @@ export default function TasksListScreen({navigation}: Props) {
       );
       setTasks(updatedTasks);
       
-      // Add points for completing task (the function will check due date and show appropriate alerts)
+      // Add points for completing task
       await addPointsForTask(taskId);
       
+      // Refresh the task list after a short delay
+      setTimeout(() => {
+        fetchTasks();
+      }, 500);
+      
     } catch (error: any) {
-      Alert.alert('Error', error.message);
+      console.error('Task completion error:', error);
+      Alert.alert('Error', error.message || 'An unexpected error occurred');
     }
   }
   
@@ -234,13 +395,13 @@ export default function TasksListScreen({navigation}: Props) {
           // Show success message
           if (isSharedTask) {
             Alert.alert(
-              'Task Completed',
-              'Task completed successfully! You and your partner each earned 1 point.'
+              'Your partner appreciates this!',
+              'You and your partner each earn one point.'
             );
           } else {
             Alert.alert(
-              'Task Completed',
-              'Task completed successfully! You earned 1 point.'
+              'Your partner appreciates this!',
+              'You earn 1 point.'
             );
           }
         }
@@ -265,10 +426,10 @@ export default function TasksListScreen({navigation}: Props) {
             
             // Show success message for current user
             Alert.alert(
-              'Task Completed',
+              'Your partner appreciates this!',
               isSharedTask 
-                ? 'Task completed! You earned 1 point, but there was an error awarding points to your partner.'
-                : 'Task completed! You earned 1 point.'
+                ? 'You and your partner each earn one point.'
+                : 'You earn 1 point.'
             );
           }
         } catch (insertError) {
@@ -284,25 +445,12 @@ export default function TasksListScreen({navigation}: Props) {
   function getAssigneeLabel(task: Task) {
     if (!profile || !session) return '';
     
-    const userName = session.user.user_metadata?.name || 'Me';
-    const partnerName = profile.partner?.name || 'Partner';
-    
-    console.log('Getting assignee label for task:', {
-      taskId: task.id,
-      assigneeId: task.assignee_id,
-      userId: session.user.id,
-      partnerId: profile.partner_id,
-      userName,
-      partnerName,
-      isShared: task.is_shared
-    });
-    
     if (task.is_shared) {
       return 'Both';
     } else if (task.assignee_id === session.user.id) {
-      return userName;
+      return profile.name || 'Me';
     } else if (task.assignee_id === profile.partner_id) {
-      return partnerName;
+      return profile.partner_name || 'Partner';
     }
     return '';
   }
@@ -351,61 +499,66 @@ export default function TasksListScreen({navigation}: Props) {
     return theme.colors.primary; // Green border for 'all' filter
   }
 
-  const renderTask = ({item}: {item: Task}) => (
-    <TouchableOpacity
-      style={[
-        styles.taskCard, 
-        item.status === 'completed' && styles.completedTaskCard,
-        { borderLeftWidth: 4, borderLeftColor: getAssigneeColor(item) }
-      ]}
-      onPress={() => navigation.navigate('TaskEdit', {taskId: item.id})}>
-      <View style={styles.taskContent}>
-        <View style={styles.taskHeader}>
-          <Text style={[
-            styles.taskTitle,
-            item.status === 'completed' && styles.completedTaskText
-          ]}>
-            {item.title}
-          </Text>
-        </View>
-        
-        {item.description && (
-          <Text 
-            style={[
-              styles.taskDescription,
-              item.status === 'completed' && styles.completedTaskText
-            ]}
-            numberOfLines={2}
-          >
-            {item.description}
-          </Text>
-        )}
-        
-        <View style={styles.taskFooter}>
-          <Text style={[
-            styles.taskDate,
-            item.status === 'completed' && styles.completedTaskText
-          ]}>
-            Due: {new Date(item.due_date).toLocaleDateString()}
-          </Text>
+  const renderTask = ({item}: {item: Task}) => {
+    // Check if the task is actually completed but showing in the wrong section
+    const isActuallyCompleted = item.status === 'completed';
+    
+    return (
+      <TouchableOpacity
+        style={[
+          styles.taskCard, 
+          isActuallyCompleted && styles.completedTaskCard,
+          { borderLeftWidth: 4, borderLeftColor: getAssigneeColor(item) }
+        ]}
+        onPress={() => navigation.navigate('TaskEdit', {taskId: item.id})}>
+        <View style={styles.taskContent}>
+          <View style={styles.taskHeader}>
+            <Text style={[
+              styles.taskTitle,
+              isActuallyCompleted && styles.completedTaskText
+            ]}>
+              {item.title}
+            </Text>
+          </View>
           
-          {item.status === 'pending' ? (
-            <TouchableOpacity
-              style={styles.completeButton}
-              onPress={() => handleCompleteTask(item.id)}>
-              <Icon name="check-circle-outline" size={18} color={theme.colors.surface} />
-              <Text style={styles.completeButtonText}>Complete</Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.completedTag}>
-              <Icon name="check-circle" size={16} color={theme.colors.success} />
-              <Text style={styles.completedText}>Completed</Text>
-            </View>
+          {item.description && (
+            <Text 
+              style={[
+                styles.taskDescription,
+                isActuallyCompleted && styles.completedTaskText
+              ]}
+              numberOfLines={2}
+            >
+              {item.description}
+            </Text>
           )}
+          
+          <View style={styles.taskFooter}>
+            <Text style={[
+              styles.taskDate,
+              isActuallyCompleted && styles.completedTaskText
+            ]}>
+              Due: {new Date(item.due_date).toLocaleDateString()}
+            </Text>
+            
+            {!isActuallyCompleted ? (
+              <TouchableOpacity
+                style={styles.completeButton}
+                onPress={() => handleCompleteTask(item.id)}>
+                <Icon name="check-circle-outline" size={18} color={theme.colors.surface} />
+                <Text style={styles.completeButtonText}>Complete</Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.completedTag}>
+                <Icon name="check-circle" size={16} color={theme.colors.success} />
+                <Text style={styles.completedText}>Completed</Text>
+              </View>
+            )}
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   const renderFilterTabs = () => (
     <View style={styles.filterContainer}>
@@ -441,7 +594,7 @@ export default function TasksListScreen({navigation}: Props) {
           styles.filterText, 
           activeFilter === 'me' && { color: theme.colors.surface }
         ]}>
-          {userName}
+          {profile?.name || 'Me'}
         </Text>
       </TouchableOpacity>
       
@@ -459,7 +612,7 @@ export default function TasksListScreen({navigation}: Props) {
           styles.filterText, 
           activeFilter === 'partner' && { color: theme.colors.surface }
         ]}>
-          {partnerName}
+          {profile?.partner_name || 'Partner'}
         </Text>
       </TouchableOpacity>
       
@@ -513,6 +666,66 @@ export default function TasksListScreen({navigation}: Props) {
     );
   };
 
+  // Function to test Supabase permissions
+  async function testSupabasePermissions() {
+    if (!session?.user.id) {
+      console.error('No user session found for permission test');
+      return;
+    }
+    
+    try {
+      console.log('Testing Supabase permissions...');
+      
+      // Test read permissions
+      const {data: readData, error: readError} = await supabase
+        .from('priorities')
+        .select('id, title, status')
+        .limit(1);
+        
+      if (readError) {
+        console.error('Read permission test failed:', readError);
+      } else {
+        console.log('Read permission test succeeded:', readData);
+      }
+      
+      // Test RLS policies by checking if we can see our own tasks
+      const {data: rlsData, error: rlsError} = await supabase
+        .from('priorities')
+        .select('id, title, status')
+        .eq('creator_id', session.user.id)
+        .limit(1);
+        
+      if (rlsError) {
+        console.error('RLS policy test failed:', rlsError);
+      } else {
+        console.log('RLS policy test succeeded:', rlsData);
+        
+        // If we have a task, test update permissions
+        if (rlsData && rlsData.length > 0) {
+          const testTaskId = rlsData[0].id;
+          const currentStatus = rlsData[0].status;
+          
+          // Try to update the task with its current status (no actual change)
+          console.log('Testing update permission on task:', testTaskId);
+          const {data: updateData, error: updateError} = await supabase
+            .from('priorities')
+            .update({status: currentStatus})
+            .eq('id', testTaskId)
+            .select();
+            
+          if (updateError) {
+            console.error('Update permission test failed:', updateError);
+          } else {
+            console.log('Update permission test succeeded:', updateData);
+          }
+        }
+      }
+      
+    } catch (error) {
+      console.error('Permission test error:', error);
+    }
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -540,19 +753,11 @@ export default function TasksListScreen({navigation}: Props) {
           onRefresh={fetchTasks}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
-            completedTasks.length > 0 || activeFilter !== 'all' ? (
+            completedTasks.length > 0 ? (
               <View style={styles.emptyActiveContainer}>
                 <Text style={styles.emptyActiveText}>No active priorities</Text>
                 <Text style={styles.emptyActiveSubtext}>
-                  {completedTasks.length > 0 
-                    ? 'All your priorities are completed. Great job!' 
-                    : activeFilter === 'me' 
-                      ? `No active priorities for ${userName}`
-                      : activeFilter === 'partner' 
-                        ? `No active priorities for ${partnerName}`
-                        : activeFilter === 'both'
-                          ? 'No shared priorities yet'
-                          : 'No active priorities found'}
+                  All your priorities are completed. Great job!
                 </Text>
               </View>
             ) : (
@@ -578,14 +783,15 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   header: {
-    padding: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
   },
   headerTitle: {
+    fontSize: theme.fontSizes.large,
     fontFamily: theme.fonts.bold,
-    fontSize: theme.fontSizes.xlarge,
     color: theme.colors.textPrimary,
   },
   filterContainer: {

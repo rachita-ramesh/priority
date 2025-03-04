@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Session } from '@supabase/supabase-js';
+import { Alert } from 'react-native';
 
 export const AuthContext = createContext<{
   session: Session | null;
@@ -8,12 +9,14 @@ export const AuthContext = createContext<{
   profile: any | null;
   loading: boolean;
   error: string | null;
+  refreshProfile: () => Promise<void>;
 }>({
   session: null,
   isAuthenticated: false,
   profile: null,
   loading: true,
   error: null,
+  refreshProfile: async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -39,6 +42,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', { event, session });
+      
+      if (event === 'TOKEN_REFRESHED') {
+        if (!session) {
+          console.log('Token refresh failed - signing out');
+          await supabase.auth.signOut();
+          setSession(null);
+          setProfile(null);
+          setError(null);
+          setLoading(false);
+          return;
+        }
+      }
+      
       setSession(session);
       
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
@@ -64,17 +80,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('Fetching profile for user:', userId);
       setError(null);
+      setLoading(true);
       
-      // Single query to get profile where user is either the owner or partner
+      // Get the complete profile with all fields
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select(`
+          id,
+          name,
+          partner_name,
+          partner_id,
+          partner_code,
+          email,
+          created_at
+        `)
         .eq('id', userId)
         .single();
 
       if (error) {
         if (error.code === 'PGRST116') {
-          // No profile found - this is expected for new users
           console.log('No profile found for user - likely a new user');
           setProfile(null);
         } else {
@@ -82,13 +106,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           throw error;
         }
       } else {
-        console.log('Profile found:', profile);
+        console.log('Complete profile data found:', profile);
+        // Set the complete profile object
         setProfile(profile);
+        console.log('Profile state updated with:', profile);
       }
     } catch (error) {
       console.error('Error in fetchProfile:', error);
       setError(error instanceof Error ? error.message : 'An unknown error occurred');
       setProfile(null);
+      
+      // Show an alert for the error
+      Alert.alert(
+        'Profile Error',
+        'There was an error loading your profile. Please try again.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              // Sign out to reset the state
+              supabase.auth.signOut();
+            }
+          }
+        ]
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Function to manually refresh the profile
+  async function refreshProfile() {
+    if (session?.user) {
+      await fetchProfile(session.user.id);
     }
   }
 
@@ -98,6 +148,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     profile,
     loading,
     error,
+    refreshProfile,
   };
 
   console.log('Auth context value:', contextValue);

@@ -9,9 +9,14 @@ import {AuthStackParamList} from './types';
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
 
-export const AuthNavigator = () => {
+type AuthNavigatorProps = {
+  initialRouteName?: keyof AuthStackParamList;
+};
+
+export const AuthNavigator = ({ initialRouteName = 'Login' }: AuthNavigatorProps) => {
   return (
     <Stack.Navigator
+      initialRouteName={initialRouteName}
       screenOptions={{
         headerShown: false,
       }}>
