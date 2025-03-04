@@ -84,46 +84,56 @@ export default function TasksListScreen({navigation}: Props) {
 
       console.log('Fetching tasks for user:', session.user.id);
 
-      // Fetch all tasks where the user is either the creator, assignee, or the task is shared
-      const {data, error} = await supabase
-        .from('priorities')
-        .select('*')
-        .or(`creator_id.eq.${session.user.id},assignee_id.eq.${session.user.id},is_shared.eq.true`)
-        .order('due_date', {ascending: true});
+      // First get the partner ID from the profile
+      if (!profile || !profile.partner_id) {
+        console.log('No partner ID found - fetching without partner tasks');
+        // Fetch only user's tasks if no partner exists
+        const {data, error} = await supabase
+          .from('priorities')
+          .select('*')
+          .or(`creator_id.eq.${session.user.id},assignee_id.eq.${session.user.id},is_shared.eq.true`)
+          .order('due_date', {ascending: true});
 
-      if (error) {
-        console.error('Error fetching tasks:', error);
-        throw error;
+        if (error) {
+          console.error('Error fetching tasks:', error);
+          throw error;
+        }
+
+        if (!data) {
+          console.log('No tasks found');
+          setTasks([]);
+        } else {
+          console.log('Fetched tasks:', data.length);
+          setTasks(data);
+        }
+      } else {
+        // Fetch all tasks where:
+        // 1. The user is either the creator or assignee
+        // 2. OR the partner is either the creator or assignee
+        console.log('Fetching tasks for user and partner:', profile.partner_id);
+        const {data, error} = await supabase
+          .from('priorities')
+          .select('*')
+          .or(`creator_id.eq.${session.user.id},assignee_id.eq.${session.user.id},creator_id.eq.${profile.partner_id},assignee_id.eq.${profile.partner_id}`)
+          .order('due_date', {ascending: true});
+
+        if (error) {
+          console.error('Error fetching tasks:', error);
+          throw error;
+        }
+
+        if (!data) {
+          console.log('No tasks found');
+          setTasks([]);
+        } else {
+          console.log('Fetched tasks:', data.length);
+          setTasks(data);
+        }
       }
 
-      if (!data) {
-        console.log('No tasks found');
-        setTasks([]);
-        return;
-      }
-
-      console.log('Tasks fetched:', data.length);
-      console.log('Tasks by status:', {
-        pending: data.filter(task => task.status === 'pending').length,
-        completed: data.filter(task => task.status === 'completed').length
-      });
-      
-      // Log a few tasks for debugging
-      if (data.length > 0) {
-        console.log('Sample tasks:', data.slice(0, 3).map(task => ({
-          id: task.id,
-          title: task.title,
-          status: task.status,
-          due_date: task.due_date
-        })));
-      }
-
-      setTasks(data);
-      filterTasks(activeFilter);
-    } catch (error: any) {
-      console.error('Task fetch error:', error);
-      Alert.alert('Error', error.message);
-    } finally {
+      setLoading(false);
+    } catch (error) {
+      console.error('Error in fetchTasks:', error);
       setLoading(false);
     }
   }

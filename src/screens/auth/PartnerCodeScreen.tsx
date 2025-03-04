@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   View,
   Text,
@@ -8,11 +8,15 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../navigation/types';
 import { theme } from '../../theme';
+import CustomButton from '../../components/CustomButton';
+import { generateRandomCode } from '../../utils/codeGenerator';
+import { AuthContext } from '../../contexts/AuthContext';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'PartnerCode'>;
 
@@ -21,6 +25,8 @@ export default function PartnerCodeScreen({ navigation }: Props) {
   const [partnerCode, setPartnerCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<any>(null);
+  const [codeGenerated, setCodeGenerated] = useState(false);
+  const { refreshProfile } = useContext(AuthContext);
 
   useEffect(() => {
     fetchProfile();
@@ -61,6 +67,7 @@ export default function PartnerCodeScreen({ navigation }: Props) {
 
       if (error) throw error;
       setMyCode(code);
+      setCodeGenerated(true);
     } catch (error: any) {
       Alert.alert('Error', error.message);
     }
@@ -70,62 +77,84 @@ export default function PartnerCodeScreen({ navigation }: Props) {
     try {
       setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
-      
       if (!user) throw new Error('No user found');
 
-      // Get current user's profile
-      const { data: myProfile, error: myProfileError } = await supabase
+      console.log('Starting partner connection process...');
+
+      // Get current user's profile (Partner B)
+      const { data: partnerB, error: myProfileError } = await supabase
         .from('profiles')
         .select('id, name')
         .eq('id', user.id)
         .single();
-        
-      if (myProfileError) throw myProfileError;
+      
+      if (myProfileError) {
+        console.error('Error getting Partner B profile:', myProfileError);
+        throw myProfileError;
+      }
+      console.log('Partner B profile:', partnerB);
 
-      // Find partner profile using the entered code (Partner A)
-      const { data: partnerProfile, error: findError } = await supabase
+      // Find partner profile using the code (Partner A)
+      const { data: partnerA, error: findError } = await supabase
         .from('profiles')
-        .select('id, name, partner_name, partner_code')
-        .eq('partner_code', partnerCode)
+        .select('id, name, partner_code')
+        .eq('partner_code', partnerCode.trim())
         .single();
 
-      if (findError || !partnerProfile) throw new Error('Invalid partner code');
+      if (findError || !partnerA) {
+        console.error('Error finding Partner A:', findError);
+        throw new Error('Invalid partner code');
+      }
+      console.log('Found Partner A profile:', partnerA);
 
-      console.log('Found partner profile:', partnerProfile);
+      // Use the stored procedure to connect partners
+      console.log('Calling connect_partners function...');
+      const { data: result, error: connectError } = await supabase.rpc('connect_partners', {
+        p_partner_a_id: partnerA.id,
+        p_partner_a_name: partnerA.name,
+        p_partner_b_id: partnerB.id,
+        p_partner_b_name: partnerB.name,
+        p_partner_code: partnerCode.trim()
+      });
 
-      // Update Partner A's profile with Partner B's info
-      const { error: updatePartnerError } = await supabase
-        .from('profiles')
-        .update({ 
-          partner_id: user.id,  // Set Partner B's ID as Partner A's partner_id
-          partner_name: myProfile.name  // Set Partner B's name as Partner A's partner_name
-        })
-        .eq('id', partnerProfile.id);
+      console.log('Connect partners result:', result);
+      
+      if (connectError) {
+        console.error('Error connecting partners:', connectError);
+        throw connectError;
+      }
+      
+      if (!result.success) {
+        console.error('Connect partners failed:', result.message);
+        throw new Error(result.message);
+      }
 
-      if (updatePartnerError) throw updatePartnerError;
-
-      // Update current user's profile (Partner B) with Partner A's info
-      // We no longer clear the partner_code since we want both partners to see it
-      const { error: updateMyError } = await supabase
-        .from('profiles')
-        .update({ 
-          partner_id: partnerProfile.id,  // Set Partner A's ID as Partner B's partner_id
-          partner_name: partnerProfile.name  // Set Partner A's name as Partner B's partner_name
-        })
-        .eq('id', user.id);
-
-      if (updateMyError) throw updateMyError;
+      // Force refresh the profile to get the updated data
+      if (refreshProfile) {
+        console.log('Refreshing profile after connection...');
+        await refreshProfile();
+      }
 
       Alert.alert(
-        'Success', 
-        `Successfully linked with ${partnerProfile.name}!`,
+        'Success!', 
+        `Connected with ${partnerA.name}!`,
         [{ 
-          text: 'OK', 
-          onPress: () => navigation.navigate('MainTabs') 
+          text: 'Continue', 
+          onPress: () => {
+            // Force refresh of the profile one more time before navigation
+            if (refreshProfile) {
+              refreshProfile().then(() => {
+                navigation.navigate('MainTabs');
+              });
+            } else {
+              navigation.navigate('MainTabs');
+            }
+          }
         }]
       );
+
     } catch (error: any) {
-      console.error('Error linking with partner:', error);
+      console.error('Error in linkWithPartner:', error);
       Alert.alert('Error', error.message);
     } finally {
       setLoading(false);
