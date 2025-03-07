@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import {supabase} from '../../lib/supabase';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
@@ -21,8 +22,14 @@ export default function SignUpScreen({navigation}: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [verifying, setVerifying] = useState(false);
 
   async function handleSignUp() {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please enter both email and password');
+      return;
+    }
+
     try {
       setLoading(true);
       console.log('Starting signup process for email:', email);
@@ -31,17 +38,38 @@ export default function SignUpScreen({navigation}: Props) {
         email,
         password,
         options: {
-          emailRedirectTo: 'priority://'
+          emailRedirectTo: 'priority://auth/callback'
         }
       });
 
       console.log('Signup response:', { data, error });
 
       if (error) throw error;
+
+      if (data.user?.identities?.length === 0) {
+        Alert.alert(
+          'Account Exists',
+          'An account with this email already exists. Please try logging in instead.',
+          [
+            {
+              text: 'Go to Login',
+              onPress: () => navigation.navigate('Login')
+            }
+          ]
+        );
+        return;
+      }
       
+      setVerifying(true);
       Alert.alert(
         'Check your email',
-        'We have sent you a confirmation email. Please check your inbox and click the confirmation link to continue.'
+        'We have sent you a confirmation email. Please check your inbox and click the confirmation link to continue.',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('Login')
+          }
+        ]
       );
     } catch (error: any) {
       console.error('Signup error:', error);
@@ -49,6 +77,29 @@ export default function SignUpScreen({navigation}: Props) {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (verifying) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.content}>
+          <View style={styles.verifyingContainer}>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
+            <Text style={styles.verifyingText}>Waiting for email verification...</Text>
+            <Text style={styles.verifyingSubtext}>
+              Please check your email and click the verification link.
+            </Text>
+            <TouchableOpacity 
+              style={[styles.button, styles.secondaryButton]}
+              onPress={() => navigation.navigate('Login')}>
+              <Text style={[styles.buttonText, styles.secondaryButtonText]}>
+                Back to Login
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
   }
 
   return (
@@ -69,6 +120,8 @@ export default function SignUpScreen({navigation}: Props) {
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
+          keyboardType="email-address"
+          autoComplete="email"
           placeholderTextColor={theme.colors.input.placeholder}
         />
         <TextInput
@@ -77,6 +130,7 @@ export default function SignUpScreen({navigation}: Props) {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          autoComplete="password-new"
           placeholderTextColor={theme.colors.input.placeholder}
         />
         <TouchableOpacity 
@@ -97,7 +151,8 @@ export default function SignUpScreen({navigation}: Props) {
         <GoogleSignInButton loading={loading} />
 
         <TouchableOpacity 
-          onPress={() => navigation.navigate('Login')}>
+          onPress={() => navigation.navigate('Login')}
+          disabled={loading}>
           <Text style={styles.loginText}>
             Already have an account? Login
           </Text>
@@ -203,5 +258,33 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     fontFamily: theme.fonts.regular,
     fontSize: theme.fontSizes.small,
+  },
+  verifyingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  verifyingText: {
+    fontFamily: theme.fonts.medium,
+    fontSize: theme.fontSizes.large,
+    color: theme.colors.textPrimary,
+    marginTop: 20,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  verifyingSubtext: {
+    fontFamily: theme.fonts.regular,
+    fontSize: theme.fontSizes.regular,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 30,
+  },
+  secondaryButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+  },
+  secondaryButtonText: {
+    color: theme.colors.primary,
   },
 }); 

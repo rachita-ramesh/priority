@@ -29,9 +29,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('Initial session check:', session);
-      setSession(session);
       if (session?.user) {
         console.log('User found in session:', session.user);
+        if (!session.user.email_confirmed_at) {
+          console.log('Email not verified - signing out');
+          Alert.alert(
+            'Email Verification Required',
+            'Please check your email and click the verification link to continue.',
+            [
+              {
+                text: 'OK',
+                onPress: async () => {
+                  await supabase.auth.signOut();
+                  setSession(null);
+                  setProfile(null);
+                  setLoading(false);
+                }
+              }
+            ]
+          );
+          return;
+        }
         fetchProfile(session.user.id);
       } else {
         console.log('No user in session');
@@ -55,11 +73,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
       
-      setSession(session);
-      
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+      if (event === 'SIGNED_IN') {
         if (session?.user) {
           console.log('User signed in:', session.user);
+          if (!session.user.email_confirmed_at) {
+            console.log('Email not verified on sign in - signing out');
+            Alert.alert(
+              'Email Verification Required',
+              'Please verify your email before signing in.',
+              [
+                {
+                  text: 'OK',
+                  onPress: async () => {
+                    await supabase.auth.signOut();
+                    setSession(null);
+                    setProfile(null);
+                    setLoading(false);
+                  }
+                }
+              ]
+            );
+            return;
+          }
           await fetchProfile(session.user.id);
         }
       } else if (event === 'SIGNED_OUT') {
@@ -69,6 +104,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setError(null);
         setLoading(false);
       }
+      
+      setSession(session);
     });
 
     return () => {

@@ -7,6 +7,7 @@ import {supabase} from '../lib/supabase';
 import type {Session, AuthChangeEvent} from '@supabase/supabase-js';
 import {ActivityIndicator, View, StyleSheet} from 'react-native';
 import {theme} from '../theme';
+import {Linking} from 'react-native';
 
 const linking: LinkingOptions<any> = {
   prefixes: ['priority://', 'https://vgudsmczrmdlwreevdrs.supabase.co'],
@@ -17,21 +18,42 @@ const linking: LinkingOptions<any> = {
         screens: {
           Login: 'login',
           SignUp: 'signup',
-          NameSetup: 'namesetup',
+          NameSetup: {
+            path: 'namesetup',
+            screens: {
+              callback: 'auth/callback'
+            }
+          },
           PartnerCode: 'partnercode',
         }
       }
     }
   },
+  async getInitialURL() {
+    // First, check if app was opened from a deep link
+    const url = await Linking.getInitialURL();
+    if (url != null) {
+      return url;
+    }
+  },
   subscribe(listener) {
     const unsubscribe = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
       console.log('Deep link auth state change:', { event, session });
-      // Remove the automatic navigation to namesetup
-      // We'll handle this in the main navigation logic
+      
+      if (event === 'SIGNED_IN') {
+        // Handle successful sign in after email verification
+        listener('priority://auth/callback');
+      }
+    });
+
+    // Listen for deep links while app is running
+    const linkingSubscription = Linking.addEventListener('url', ({ url }) => {
+      listener(url);
     });
 
     return () => {
       unsubscribe.data.subscription.unsubscribe();
+      linkingSubscription.remove();
     };
   },
 };
