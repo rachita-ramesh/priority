@@ -24,7 +24,7 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>com.priority</string>
+			<string>com.rachita.priority</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>priority</string>
