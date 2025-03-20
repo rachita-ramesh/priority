@@ -12,6 +12,7 @@
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.1.2",
     "@react-native-community/datetimepicker": "^8.3.0",
+    "@react-native-community/push-notification-ios": "^1.11.0",
     "@react-native-google-signin/google-signin": "^13.2.0",
     "@react-native-picker/picker": "^2.11.0",
     "@react-navigation/bottom-tabs": "^7.2.0",
@@ -22,6 +23,7 @@
     "react-native": "0.78.0",
     "react-native-dropdown-picker": "^5.4.6",
     "react-native-gesture-handler": "^2.24.0",
+    "react-native-push-notification": "^8.1.1",
     "react-native-reanimated": "^3.17.1",
     "react-native-safe-area-context": "^5.2.0",
     "react-native-screens": "^4.9.1",

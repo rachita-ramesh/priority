@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Session } from '@supabase/supabase-js';
 import { Alert } from 'react-native';
+import NotificationService from '../services/NotificationService';
 
 export const AuthContext = createContext<{
   session: Session | null;
@@ -24,6 +25,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Initialize notification service when session or profile changes
+  useEffect(() => {
+    if (session?.user && profile) {
+      console.log('Initializing notification service');
+      // Initialize notification service with user ID and partner name
+      NotificationService.initialize(session.user.id, profile.partner_name);
+      
+      // Start listening for new task assignments
+      NotificationService.startListeningForNewAssignments();
+      
+      // Schedule notifications for all existing tasks
+      fetchTasksForNotifications();
+    } else {
+      // If not logged in, stop listening for new assignments
+      NotificationService.stopListeningForNewAssignments();
+    }
+    
+    return () => {
+      // Clean up when unmounting
+      if (session?.user) {
+        NotificationService.stopListeningForNewAssignments();
+      }
+    };
+  }, [session, profile]);
+
+  // Fetch tasks to schedule notifications
+  const fetchTasksForNotifications = async () => {
+    if (!session?.user) return;
+    
+    try {
+      console.log('Fetching tasks for notification scheduling');
+      const { data, error } = await supabase
+        .from('priorities')
+        .select('*')
+        .eq('assignee_id', session.user.id)
+        .eq('status', 'pending');
+        
+      if (error) {
+        console.error('Error fetching tasks for notifications:', error);
+        return;
+      }
+      
+      if (data && data.length > 0) {
+        console.log(`Scheduling notifications for ${data.length} pending tasks`);
+        NotificationService.scheduleAllDueDateReminders(data);
+      }
+    } catch (err) {
+      console.error('Error in fetchTasksForNotifications:', err);
+    }
+  };
 
   useEffect(() => {
     // Initial session check
@@ -99,6 +151,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } else if (event === 'SIGNED_OUT') {
         console.log('User signed out - clearing state');
+        // Cancel all notifications when user signs out
+        NotificationService.cancelAllNotifications();
         setSession(null);
         setProfile(null);
         setError(null);

@@ -16,6 +16,7 @@ import {theme} from '../../theme';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {TasksStackParamList} from '../../navigation/types';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import NotificationService from '../../services/NotificationService';
 
 type Props = NativeStackScreenProps<TasksStackParamList, 'TaskEdit'>;
 
@@ -25,6 +26,7 @@ export default function TaskEditScreen({route, navigation}: Props) {
   const [dueDate, setDueDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
+  const [taskData, setTaskData] = useState<any>(null);
   const {session} = useAuth();
 
   useEffect(() => {
@@ -43,6 +45,7 @@ export default function TaskEditScreen({route, navigation}: Props) {
       if (data) {
         setTitle(data.title);
         setDueDate(new Date(data.due_date));
+        setTaskData(data);
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'An unexpected error occurred';
@@ -60,15 +63,38 @@ export default function TaskEditScreen({route, navigation}: Props) {
 
     try {
       setLoading(true);
-      const {error} = await supabase
+      
+      // Update in Supabase
+      const {data, error} = await supabase
         .from('priorities')
         .update({
           title: title.trim(),
           due_date: dueDate.toISOString(),
         })
-        .eq('id', taskId);
+        .eq('id', taskId)
+        .select();
 
       if (error) throw error;
+      
+      // Handle notification updates
+      if (data && data.length > 0) {
+        const updatedTask = data[0];
+        
+        // If due date changed, update any scheduled notifications
+        if (taskData && taskData.due_date !== updatedTask.due_date) {
+          console.log('Due date changed, updating notifications');
+          
+          // Cancel existing notification
+          await NotificationService.cancelNotificationForTask(taskId, 'due_date');
+          
+          // If assigned to current user, schedule new notification
+          if (updatedTask.assignee_id === session?.user.id || updatedTask.is_shared) {
+            console.log('Rescheduling notification for updated task');
+            await NotificationService.scheduleDueDateReminder(updatedTask);
+          }
+        }
+      }
+      
       navigation.goBack();
     } catch (error: any) {
       Alert.alert('Error', error.message);
@@ -106,6 +132,9 @@ export default function TaskEditScreen({route, navigation}: Props) {
 
               console.log('Task details:', taskData);
               console.log('Current user:', session?.user.id);
+
+              // Cancel any scheduled notifications for this task
+              await NotificationService.cancelNotificationForTask(taskId, 'due_date');
 
               const {error: deleteError} = await supabase
                 .from('priorities')

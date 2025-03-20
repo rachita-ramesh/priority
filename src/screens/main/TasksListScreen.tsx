@@ -16,6 +16,7 @@ import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {TasksStackParamList} from '../../navigation/types';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import TaskCompletedModal from '../../components/TaskCompletedModal';
+import NotificationService from '../../services/NotificationService';
 
 type Props = NativeStackScreenProps<TasksStackParamList, 'TasksList'>;
 
@@ -76,6 +77,23 @@ export default function TasksListScreen({navigation}: Props) {
       setFilteredTasks([]);
     }
   }, [tasks, activeFilter]);
+
+  // Schedule notifications after tasks are fetched or updated
+  useEffect(() => {
+    if (tasks.length > 0 && session?.user.id) {
+      // Find tasks assigned to the current user that are pending
+      const myPendingTasks = tasks.filter(task => 
+        task.assignee_id === session.user.id && 
+        task.status === 'pending'
+      );
+      
+      // Schedule notifications for these tasks
+      if (myPendingTasks.length > 0) {
+        console.log(`Scheduling notifications for ${myPendingTasks.length} pending tasks`);
+        NotificationService.scheduleAllDueDateReminders(myPendingTasks);
+      }
+    }
+  }, [tasks, session]);
 
   async function fetchTasks() {
     try {
@@ -243,6 +261,11 @@ export default function TasksListScreen({navigation}: Props) {
         console.error('User may not have permission to update this task');
       }
       
+      // When task is completed, cancel any outstanding notifications
+      if (taskToComplete) {
+        NotificationService.cancelNotificationForTask(taskId, 'due_date');
+      }
+      
       // Update the task status in Supabase
       console.log('Sending update to Supabase for task:', taskId);
       
@@ -371,6 +394,10 @@ export default function TasksListScreen({navigation}: Props) {
         isCompletedBeforeDueDate
       });
       
+      // Always show completed modal, regardless of timing
+      setCompletedTaskIsShared(taskToComplete.is_shared);
+      setCompletedModalVisible(true);
+      
       // If the task is completed after the due date, don't award points
       if (!isCompletedBeforeDueDate) {
         console.log(`Task ${taskId} completed after due date. No points awarded.`);
@@ -404,10 +431,6 @@ export default function TasksListScreen({navigation}: Props) {
           );
         } else {
           console.log('Points awarded successfully:', data);
-          
-          // Show the task completed modal
-          setCompletedTaskIsShared(isSharedTask);
-          setCompletedModalVisible(true);
         }
       } catch (rpcError) {
         console.error('RPC error awarding points:', rpcError);
@@ -427,10 +450,6 @@ export default function TasksListScreen({navigation}: Props) {
             console.error('Error adding points for current user:', userError);
           } else {
             console.log('Successfully added points for current user');
-            
-            // Show the task completed modal
-            setCompletedTaskIsShared(isSharedTask);
-            setCompletedModalVisible(true);
           }
         } catch (insertError) {
           console.error('Insert error for current user:', insertError);
