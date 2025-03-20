@@ -78,6 +78,7 @@ export default function TaskEditScreen({route, navigation}: Props) {
   }
 
   async function handleDeleteTask() {
+    console.log('Delete task initiated for taskId:', taskId);
     Alert.alert(
       'Delete Priority',
       'Are you sure you want to delete this priority?',
@@ -88,15 +89,38 @@ export default function TaskEditScreen({route, navigation}: Props) {
           style: 'destructive',
           onPress: async () => {
             try {
+              console.log('Delete confirmed, attempting to delete task:', taskId);
               setLoading(true);
-              const {error} = await supabase
+
+              // First verify we have the task and permissions
+              const {data: taskData, error: taskError} = await supabase
+                .from('priorities')
+                .select('creator_id, assignee_id, is_shared')
+                .eq('id', taskId)
+                .single();
+
+              if (taskError) {
+                console.error('Error fetching task details:', taskError);
+                throw taskError;
+              }
+
+              console.log('Task details:', taskData);
+              console.log('Current user:', session?.user.id);
+
+              const {error: deleteError} = await supabase
                 .from('priorities')
                 .delete()
                 .eq('id', taskId);
 
-              if (error) throw error;
+              if (deleteError) {
+                console.error('Error deleting task:', deleteError);
+                throw deleteError;
+              }
+
+              console.log('Task deleted successfully');
               navigation.goBack();
             } catch (error) {
+              console.error('Delete task error:', error);
               const message = error instanceof Error ? error.message : 'An unexpected error occurred';
               Alert.alert('Error', message);
             } finally {

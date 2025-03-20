@@ -15,6 +15,7 @@ import {theme} from '../../theme';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {TasksStackParamList} from '../../navigation/types';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import TaskCompletedModal from '../../components/TaskCompletedModal';
 
 type Props = NativeStackScreenProps<TasksStackParamList, 'TasksList'>;
 
@@ -40,6 +41,8 @@ export default function TasksListScreen({navigation}: Props) {
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const {session, profile} = useAuth();
+  const [completedModalVisible, setCompletedModalVisible] = useState(false);
+  const [completedTaskIsShared, setCompletedTaskIsShared] = useState(false);
 
   useEffect(() => {
     fetchTasks();
@@ -402,18 +405,9 @@ export default function TasksListScreen({navigation}: Props) {
         } else {
           console.log('Points awarded successfully:', data);
           
-          // Show success message
-          if (isSharedTask) {
-            Alert.alert(
-              'Your partner appreciates this!',
-              'You and your partner each earn one point.'
-            );
-          } else {
-            Alert.alert(
-              'Your partner appreciates this!',
-              'You earn 1 point.'
-            );
-          }
+          // Show the task completed modal
+          setCompletedTaskIsShared(isSharedTask);
+          setCompletedModalVisible(true);
         }
       } catch (rpcError) {
         console.error('RPC error awarding points:', rpcError);
@@ -434,13 +428,9 @@ export default function TasksListScreen({navigation}: Props) {
           } else {
             console.log('Successfully added points for current user');
             
-            // Show success message for current user
-            Alert.alert(
-              'Your partner appreciates this!',
-              isSharedTask 
-                ? 'You and your partner each earn one point.'
-                : 'You earn 1 point.'
-            );
+            // Show the task completed modal
+            setCompletedTaskIsShared(isSharedTask);
+            setCompletedModalVisible(true);
           }
         } catch (insertError) {
           console.error('Insert error for current user:', insertError);
@@ -783,6 +773,13 @@ export default function TasksListScreen({navigation}: Props) {
           ListFooterComponent={renderCompletedTasksHeader}
         />
       )}
+
+      <TaskCompletedModal
+        visible={completedModalVisible}
+        onClose={() => setCompletedModalVisible(false)}
+        isShared={completedTaskIsShared}
+        partnerName={profile?.partner_name || 'Your partner'}
+      />
     </SafeAreaView>
   );
 }
