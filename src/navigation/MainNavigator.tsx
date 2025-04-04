@@ -1,6 +1,7 @@
 import React from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {TasksNavigator} from './TasksNavigator';
+import {CoreNavigator} from './CoreNavigator';
 import SettingsScreen from '../screens/main/SettingsScreen';
 import {MainStackParamList} from './types';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -31,6 +32,16 @@ export const MainNavigator = () => {
           title: 'Priorities',
           tabBarIcon: ({color, size}) => (
             <MaterialCommunityIcons name="heart-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen 
+        name="CoreTab" 
+        component={CoreNavigator}
+        options={{
+          title: 'Core',
+          tabBarIcon: ({color, size}) => (
+            <MaterialCommunityIcons name="star-circle-outline" size={size} color={color} />
           ),
         }}
       />
