@@ -16,10 +16,11 @@ import {useNavigation, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {CoreStackParamList} from '../../navigation/types';
 import {supabase} from '../../lib/supabase';
-import Icon from 'react-native-vector-icons/Ionicons';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {theme} from '../../theme';
 import {useAuth} from '../../hooks/useAuth';
-import { Session } from '@supabase/supabase-js';
+import {Session} from '@supabase/supabase-js';
+import {generateWeeklyPrompt, getPreviousPrompts} from '../../services/promptService';
 
 type Reflection = {
   id: string;
@@ -67,41 +68,150 @@ const ReflectionsScreen = () => {
     }
   }, [promptFromHome, activeReflection]);
 
+  const getStartOfWeek = (date: Date) => {
+    const newDate = new Date(date);
+    const day = newDate.getDay(); // Sunday is 0, Saturday is 6
+    // Adjust to get to the most recent Sunday
+    const diff = newDate.getDate() - day;
+    return new Date(newDate.setDate(diff));
+  };
+
   const fetchReflections = async () => {
     try {
       setLoading(true);
       
-      // This is a placeholder - we'll need to create this table
+      // Get the start of the current week (Sunday)
+      const currentWeekStart = getStartOfWeek(new Date()).toISOString();
+      
+      // Fetch all reflections
       const {data, error} = await supabase
         .from('reflections')
         .select('*')
         .order('week_date', {ascending: false});
       
       if (error) throw error;
+
+      let reflectionsData = data || [];
       
-      if (data && data.length > 0) {
-        setReflections(data as Reflection[]);
-        setActiveReflection(data[0] as Reflection);
-      } else {
+      // Check if we already have a reflection for the current week
+      const existingCurrentWeekReflection = reflectionsData.find(
+        r => new Date(r.week_date).toDateString() === new Date(currentWeekStart).toDateString()
+      );
+      
+      if (!existingCurrentWeekReflection) {
+        // Generate a new prompt if one isn't provided from home
+        let promptQuestion = promptFromHome;
+        
+        if (!promptQuestion && session?.user?.id) {
+          try {
+            // Get previously used prompts to avoid repetition
+            const previousPrompts = await getPreviousPrompts(session.user.id, 10);
+            
+            // Generate a new prompt using GPT-4o
+            promptQuestion = await generateWeeklyPrompt({
+              previousPrompts,
+              userId: session.user.id
+            });
+            
+            console.log('Generated new weekly prompt for reflection:', promptQuestion);
+          } catch (promptError) {
+            console.error('Error generating prompt for reflection:', promptError);
+            // Fall back to default prompt
+            promptQuestion = 'What made you feel appreciated this week?';
+          }
+        } else if (!promptQuestion) {
+          // Default if no promptFromHome and no session
+          promptQuestion = 'What made you feel appreciated this week?';
+        }
+        
         // Create a new reflection for current week
-        createNewWeeklyReflection();
+        const newReflection = {
+          week_date: currentWeekStart,
+          highlights: '',
+          challenges: '',
+          gratitude: '',
+          prompt_response: '',
+          prompt_question: promptQuestion,
+          created_at: new Date().toISOString(),
+          user_id: session?.user?.id,
+        };
+        
+        try {
+          const {data: newData, error: insertError} = await supabase
+            .from('reflections')
+            .insert(newReflection)
+            .select()
+            .single();
+          
+          if (insertError) throw insertError;
+          
+          if (newData) {
+            // Add the new reflection to the beginning of the array
+            reflectionsData = [newData, ...reflectionsData];
+            setActiveReflection(newData);
+          }
+        } catch (insertError) {
+          console.error('Error creating new reflection:', insertError);
+          // If database insert fails, still show the new reflection in UI
+          setActiveReflection({
+            id: 'temp-' + Date.now(),
+            ...newReflection
+          } as Reflection);
+        }
+      } else {
+        // Use the existing current week reflection
+        setActiveReflection(existingCurrentWeekReflection);
+      }
+      
+      // Update the reflections list
+      setReflections(reflectionsData);
+      
+      if (promptFromHome) {
+        setActiveTab('weekly');
+        setEditing(true);
       }
     } catch (error) {
       console.error('Error fetching reflections:', error);
-      // Use placeholder data if table doesn't exist yet
-      const thisWeek = getStartOfWeek(new Date()).toISOString();
-      const placeholderReflection = {
-        id: '1',
-        week_date: thisWeek,
+      // Create a fallback reflection for the current week
+      const currentWeekStart = getStartOfWeek(new Date()).toISOString();
+      
+      // Generate a fallback prompt
+      let promptQuestion = promptFromHome;
+      if (!promptQuestion) {
+        try {
+          if (session?.user?.id) {
+            // Try to generate a prompt using the service, but don't wait too long
+            const timeoutPromise = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Prompt generation timed out')), 3000)
+            );
+            
+            const promptPromise = getPreviousPrompts(session.user.id, 5)
+              .then(previousPrompts => generateWeeklyPrompt({previousPrompts, userId: session.user.id}));
+              
+            promptQuestion = await Promise.race([promptPromise, timeoutPromise]) as string;
+          }
+        } catch (promptError) {
+          console.error('Error generating fallback prompt:', promptError);
+          promptQuestion = 'What made you feel appreciated this week?';
+        }
+      }
+      
+      if (!promptQuestion) {
+        promptQuestion = 'What made you feel appreciated this week?';
+      }
+      
+      const fallbackReflection = {
+        id: 'temp-' + Date.now(),
+        week_date: currentWeekStart,
         highlights: '',
         challenges: '',
         gratitude: '',
         prompt_response: '',
-        prompt_question: promptFromHome || 'What made you feel appreciated this week?',
+        prompt_question: promptQuestion,
         created_at: new Date().toISOString(),
       };
-      setReflections([placeholderReflection]);
-      setActiveReflection(placeholderReflection);
+      setReflections([fallbackReflection]);
+      setActiveReflection(fallbackReflection);
 
       if (promptFromHome) {
         setActiveTab('weekly');
@@ -110,13 +220,6 @@ const ReflectionsScreen = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const getStartOfWeek = (date: Date) => {
-    const newDate = new Date(date);
-    const day = newDate.getDay();
-    const diff = newDate.getDate() - day + (day === 0 ? -6 : 1);
-    return new Date(newDate.setDate(diff));
   };
 
   const createNewWeeklyReflection = async () => {
@@ -132,6 +235,31 @@ const ReflectionsScreen = () => {
       return;
     }
     
+    // Generate a new prompt if one isn't provided from home
+    let promptQuestion = promptFromHome;
+    
+    if (!promptQuestion && session?.user?.id) {
+      try {
+        // Get previously used prompts to avoid repetition
+        const previousPrompts = await getPreviousPrompts(session.user.id, 10);
+        
+        // Generate a new prompt using GPT-4o
+        promptQuestion = await generateWeeklyPrompt({
+          previousPrompts,
+          userId: session.user.id
+        });
+        
+        console.log('Generated new weekly prompt for new reflection:', promptQuestion);
+      } catch (promptError) {
+        console.error('Error generating prompt for new reflection:', promptError);
+        // Fall back to default prompt
+        promptQuestion = 'What made you feel appreciated this week?';
+      }
+    } else if (!promptQuestion) {
+      // Default if no promptFromHome and no session
+      promptQuestion = 'What made you feel appreciated this week?';
+    }
+    
     const newReflection = {
       // Let Supabase generate the UUID
       week_date: thisWeek,
@@ -139,7 +267,7 @@ const ReflectionsScreen = () => {
       challenges: '',
       gratitude: '',
       prompt_response: '',
-      prompt_question: promptFromHome || 'What made you feel appreciated this week?',
+      prompt_question: promptQuestion,
       created_at: new Date().toISOString(),
       user_id: session?.user?.id, // Add user_id from session
     };

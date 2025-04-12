@@ -48,10 +48,6 @@
 			</dict>
 		</dict>
 	</dict>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>We need access to your microphone to record voice notes for your reflections</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Mali-Regular.ttf</string>

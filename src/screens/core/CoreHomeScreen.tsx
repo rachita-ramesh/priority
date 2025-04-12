@@ -13,6 +13,7 @@ import {theme} from '../../theme';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {CoreStackParamList} from '../../navigation/types';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {generateWeeklyPrompt, getPreviousPrompts} from '../../services/promptService';
 
 type Props = NativeStackScreenProps<CoreStackParamList, 'CoreHome'>;
 
@@ -34,12 +35,48 @@ export default function CoreHomeScreen({navigation}: Props) {
     "What made you feel appreciated this week?"
   );
 
+  // Function to fetch or generate a new weekly prompt
+  const fetchWeeklyPrompt = async () => {
+    try {
+      if (!session?.user?.id) {
+        return;
+      }
+
+      // Get previously used prompts to avoid repetition
+      const previousPrompts = await getPreviousPrompts(session.user.id, 10);
+      
+      // Generate a new prompt using GPT-4o
+      const newPrompt = await generateWeeklyPrompt({
+        previousPrompts,
+        userId: session.user.id
+      });
+      
+      setWeeklyPrompt(newPrompt);
+      console.log('New weekly prompt set:', newPrompt);
+    } catch (error) {
+      console.error('Error fetching weekly prompt:', error);
+      // Keep the default prompt if there's an error
+    }
+  };
+
   useEffect(() => {
-    // This would be replaced with actual data fetching
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  }, []);
+    // Fetch data and prompt
+    const loadData = async () => {
+      try {
+        // This would be replaced with actual data fetching for the relationship pulse
+        // Simulate data loading with setTimeout
+        setTimeout(async () => {
+          await fetchWeeklyPrompt();
+          setLoading(false);
+        }, 1000);
+      } catch (error) {
+        console.error('Error loading home screen data:', error);
+        setLoading(false);
+      }
+    };
+    
+    loadData();
+  }, [session]);
 
   if (loading) {
     return (
@@ -171,7 +208,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   headerTitle: {
-    fontSize: theme.fontSizes.large,
+    fontSize: theme.fontSizes.xlarge,
     fontFamily: theme.fonts.bold,
     color: theme.colors.textPrimary,
   },

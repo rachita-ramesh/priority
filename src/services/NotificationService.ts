@@ -169,18 +169,24 @@ class NotificationService {
       const dueDate = new Date(task.due_date);
       console.log(`Scheduling reminder check for task ${task.id} - "${task.title}" with due date ${dueDate.toISOString()}`);
       
-      // Calculate time for the reminder
-      let reminderTime: Date;
+      // Calculate times for the reminders
+      let reminderTimes: Date[] = [];
       
       if (testMode) {
         // In test mode, set the reminder to 2 minutes from now
-        reminderTime = new Date();
-        reminderTime.setMinutes(reminderTime.getMinutes() + 2);
+        const testReminderTime = new Date();
+        testReminderTime.setMinutes(testReminderTime.getMinutes() + 2);
+        reminderTimes.push(testReminderTime);
         console.log(`📱 TEST MODE: Setting reminder to 2 minutes from now`);
       } else {
-        // Normal mode: 24 hours before due date
-        reminderTime = new Date(dueDate);
-        reminderTime.setDate(reminderTime.getDate() - 1);
+        // Normal mode: 24 hours and 12 hours before due date
+        const reminder24h = new Date(dueDate);
+        reminder24h.setHours(reminder24h.getHours() - 24);
+        
+        const reminder12h = new Date(dueDate);
+        reminder12h.setHours(reminder12h.getHours() - 12);
+        
+        reminderTimes.push(reminder24h, reminder12h);
       }
       
       const now = new Date();
@@ -188,58 +194,74 @@ class NotificationService {
       // Format dates for readable logging
       const formattedNow = now.toLocaleString();
       const formattedDueDate = dueDate.toLocaleString();
-      const formattedReminderTime = reminderTime.toLocaleString();
       
       console.log(`📅 NOTIFICATION TEST INFO:`);
       console.log(`📱 Current time: ${formattedNow}`);
-      console.log(`🔔 Reminder will trigger at: ${formattedReminderTime}`);
       console.log(`⏰ Task due date: ${formattedDueDate}`);
       
       // In test mode, skip the past-date check
       if (!testMode) {
         // Use date comparison that ignores timezone issues
         const isPastDue = dueDate.getTime() <= now.getTime();
-        const isPastReminder = reminderTime.getTime() <= now.getTime();
         
-        // Don't schedule if the due date is in the past or the reminder time is in the past
-        if (isPastDue || isPastReminder) {
-          console.log(`❌ Not scheduling reminder for task ${task.id} - due date is in the past or too soon`);
+        // Don't schedule if the due date is in the past
+        if (isPastDue) {
+          console.log(`❌ Not scheduling reminder for task ${task.id} - due date is in the past`);
           return null;
         }
       }
 
-      // Generate a unique ID for the notification
-      const notificationId = `due-${task.id}`;
-      
-      // Calculate milliseconds until reminder time
-      const msUntilReminder = reminderTime.getTime() - now.getTime();
-      const minutesUntilReminder = Math.round(msUntilReminder / (1000 * 60));
-      console.log(`✅ Scheduling notification for task "${task.title}"`);
-      console.log(`📲 Notification will appear in approximately ${minutesUntilReminder} minutes`);
+      let scheduledNotifications: NotificationData[] = [];
 
-      // Schedule the notification
-      PushNotification.localNotificationSchedule({
-        id: notificationId,
-        channelId: 'due-date-reminders',
-        title: 'Priority Reminder',
-        message: `${task.title} due tomorrow`,
-        date: reminderTime,
-        allowWhileIdle: true,
-        userInfo: {
+      // Schedule notifications for each reminder time
+      for (const reminderTime of reminderTimes) {
+        // Skip if reminder time is in the past
+        if (!testMode && reminderTime.getTime() <= now.getTime()) {
+          console.log(`Skipping reminder at ${reminderTime.toLocaleString()} - time already passed`);
+          continue;
+        }
+
+        const formattedReminderTime = reminderTime.toLocaleString();
+        console.log(`🔔 Scheduling reminder for: ${formattedReminderTime}`);
+
+        // Generate a unique ID for the notification
+        const hoursUntilDue = Math.round((dueDate.getTime() - reminderTime.getTime()) / (1000 * 60 * 60));
+        const notificationId = `due-${task.id}-${hoursUntilDue}h`;
+        
+        // Calculate milliseconds until reminder time
+        const msUntilReminder = reminderTime.getTime() - now.getTime();
+        const minutesUntilReminder = Math.round(msUntilReminder / (1000 * 60));
+        console.log(`📲 Notification will appear in approximately ${minutesUntilReminder} minutes`);
+
+        // Schedule the notification
+        PushNotification.localNotificationSchedule({
+          id: notificationId,
+          channelId: 'due-date-reminders',
+          title: 'Priority Reminder',
+          message: `${task.title} due in ${hoursUntilDue} hours`,
+          date: reminderTime,
+          allowWhileIdle: true,
+          userInfo: {
+            taskId: task.id,
+            type: 'due_date',
+            hoursUntilDue
+          },
+        });
+
+        scheduledNotifications.push({
           taskId: task.id,
-          type: 'due_date',
-        },
-      });
+          notificationId,
+          type: 'due_date' as const,
+          scheduledTime: reminderTime.getTime(),
+        });
+      }
 
-      // Store notification data in AsyncStorage for future reference
-      await this.storeNotificationData({
-        taskId: task.id,
-        notificationId,
-        type: 'due_date',
-        scheduledTime: reminderTime.getTime(),
-      });
+      // Store notification data in AsyncStorage
+      for (const notification of scheduledNotifications) {
+        await this.storeNotificationData(notification);
+      }
 
-      return notificationId;
+      return scheduledNotifications[0]?.notificationId || null;
     } catch (error) {
       console.error('Error scheduling due date reminder:', error);
       return null;

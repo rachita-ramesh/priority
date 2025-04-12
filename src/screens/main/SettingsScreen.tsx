@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: theme.fonts.bold,
-    fontSize: 28,
+    fontSize: theme.fontSizes.xlarge,
     color: theme.colors.textPrimary,
     marginBottom: 30,
   },

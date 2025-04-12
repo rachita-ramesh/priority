@@ -21,7 +21,7 @@ export const MainNavigator = () => {
         },
         tabBarLabelStyle: {
           fontFamily: theme.fonts.medium,
-          fontSize: 12,
+          fontSize: 14,
         },
         headerShown: false,
       }}>

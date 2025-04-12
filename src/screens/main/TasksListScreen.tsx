@@ -816,7 +816,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   headerTitle: {
-    fontSize: theme.fontSizes.large,
+    fontSize: theme.fontSizes.xlarge,
     fontFamily: theme.fonts.bold,
     color: theme.colors.textPrimary,
   },
