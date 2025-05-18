@@ -159,8 +159,9 @@ class NotificationService {
 
   // Schedule a notification for an upcoming due date
   async scheduleDueDateReminder(task: Task, testMode = false): Promise<string | null> {
-    if (!this.userId || this.userId !== task.assignee_id) {
-      // Only schedule reminders for tasks assigned to the current user
+    // Only schedule reminders for tasks assigned to the current user OR shared tasks
+    if (!this.userId || (this.userId !== task.assignee_id && !task.is_shared)) {
+      console.log(`Not scheduling reminder for task ${task.id} - Not assigned to user ${this.userId} and not shared.`);
       return null;
     }
 
@@ -287,7 +288,7 @@ class NotificationService {
           event: 'INSERT',
           schema: 'public',
           table: 'priorities',
-          filter: `assignee_id=eq.${this.userId}`,
+          filter: `or=(assignee_id.eq.${this.userId},is_shared.eq.true)`,
         },
         (payload) => {
           const newTask = payload.new as Task;

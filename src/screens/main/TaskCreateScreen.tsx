@@ -174,16 +174,6 @@ export default function TaskCreateScreen({navigation}: Props) {
 
       console.log('Priority created successfully:', data);
       
-      // Schedule a notification if the task is assigned to the current user
-      if (data && data.length > 0) {
-        const newTask = data[0];
-        
-        if (newTask.assignee_id === user.id || newTask.is_shared) {
-          console.log('Scheduling notification for new task:', newTask.id);
-          NotificationService.scheduleDueDateReminder(newTask);
-        }
-      }
-      
       // Force a refresh of the tasks list when navigating back
       navigation.goBack();
     } catch (error: any) {
