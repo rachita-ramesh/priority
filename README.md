@@ -1,3 +1,4 @@
+![playstore](https://github.com/user-attachments/assets/348d71a5-de10-43f2-9516-9bb58b039596)
 # Priority ✨
 
 Go beyond shared to-do lists. Priority is your private space to not only manage life’s logistics but to intentionally grow as a couple. It’s a tool for building a more connected and fulfilling partnership, one priority and one reflection at a time.
