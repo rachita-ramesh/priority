@@ -1,19 +1,18 @@
 # Priority ✨
 
-Transform the way you and your partner tackle life together! Priority is not just another task app – it's your shared command center for conquering daily challenges as a team. Whether you're managing household responsibilities, planning adventures, or dividing up the daily grind, Priority makes it fun and effortless to stay in sync.
+Go beyond shared to-do lists. Priority is your private space to not only manage life’s logistics but to intentionally grow as a couple. It’s a tool for building a more connected and fulfilling partnership, one priority and one reflection at a time.
 
 ## 🌟 What Makes Priority Special
 
-- **Team Up Like Never Before**: Create, share, and conquer tasks together with a beautifully designed shared workspace
-- **Smart Task Management**: 
-  - See everything at a glance: your tasks, partner's tasks, and shared missions
-  - Watch tasks move from 'to-do' to 'done' with satisfying status updates
-  - Never miss a beat with smart due dates and timely reminders
-- **Make it Fun with Points**: Turn everyday tasks into a friendly competition! Earn points, celebrate completions, and keep the motivation flowing
-- **Stay Connected**: 
-  - Real-time updates keep you both on the same page, always
-  - Get gentle nudges through push notifications when tasks need attention
-  - Link up seamlessly with your partner using a unique connection code
+- **Team Up on Priorities**: 
+  - Create, share, and conquer priorities together as a team.
+  - See everything at a glance: your tasks, your partner's, and shared missions.
+  - Get satisfying status updates and celebrate progress.
+  - Never miss a beat with smart due dates and timely reminders.
+- **Grow Together**:
+  - Engage with thoughtful, AI-generated prompts for personal and relationship growth.
+  - Document your weekly highlights, challenges, and moments of gratitude.
+  - Look back on past reflections to see how far you've come.
 
 ## 🚀 Get Started in Minutes
 
@@ -23,11 +22,6 @@ Transform the way you and your partner tackle life together! Priority is not jus
 4. Connect with your partner using your unique code
 5. Start crushing your goals together!
 
-## 🔒 Your Privacy Matters
-
-- Bank-grade encryption keeps your data safe
-- Secure Google Sign-In protection
-- Private partner connections with verification
 
 ## 💬 Need Help?
 
